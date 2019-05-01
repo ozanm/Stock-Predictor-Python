@@ -1,0 +1,74 @@
+[
+    {
+        "exch": "NMS",
+        "exchDisp": "NASDAQ",
+        "name": "Facebook, Inc.",
+        "symbol": "FB",
+        "type": "S",
+        "typeDisp": "Equity"
+    },
+    {
+        "exch": "NMS",
+        "exchDisp": "NASDAQ",
+        "name": "Fortress Biotech, Inc.",
+        "symbol": "FBIO",
+        "type": "S",
+        "typeDisp": "Equity"
+    },
+    {
+        "exch": "NYQ",
+        "exchDisp": "NYSE",
+        "name": "Fortune Brands Home & Security, Inc.",
+        "symbol": "FBHS",
+        "type": "S",
+        "typeDisp": "Equity"
+    },
+    {
+        "exch": "NAS",
+        "exchDisp": "NASDAQ",
+        "name": "Fidelity Blue Chip Growth Fund",
+        "symbol": "FBGRX",
+        "type": "M",
+        "typeDisp": "Fund"
+    },
+    {
+        "exch": "NAS",
+        "exchDisp": "NASDAQ",
+        "name": "Fidelity Select Biotechnology Portfolio",
+        "symbol": "FBIOX",
+        "type": "M",
+        "typeDisp": "Fund"
+    },
+    {
+        "exch": "NAS",
+        "exchDisp": "NASDAQ",
+        "name": "Fidelity Balanced Fund",
+        "symbol": "FBALX",
+        "type": "M",
+        "typeDisp": "Fund"
+    },
+    {
+        "exch": "NYQ",
+        "exchDisp": "NYSE",
+        "name": "First BanCorp.",
+        "symbol": "FBP",
+        "type": "S",
+        "typeDisp": "Equity"
+    },
+    {
+        "exch": "NAS",
+        "exchDisp": "NASDAQ",
+        "name": "Fidelity Select IT Services Portfolio",
+        "symbol": "FBSOX",
+        "type": "M",
+        "typeDisp": "Fund"
+    },
+    {
+        "exch": "NYQ",
+        "exchDisp": "NYSE",
+        "name": "Flagstar Bancorp, Inc.",
+        "symbol": "FBC",
+        "type": "S",
+        "typeDisp": "Equity"
+    }
+]
