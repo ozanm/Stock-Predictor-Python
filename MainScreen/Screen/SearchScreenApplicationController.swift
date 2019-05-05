@@ -13,12 +13,15 @@ class AppDelegate: NSWindowController, NSApplicationDelegate, NSWindowDelegate {
   }
 }
 
-class MainWindowController: NSWindowController {
+class MainWindowController: NSWindowController, NSWindowDelegate {
   convenience init() {
     self.init(window: NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1000, height: 650), styleMask: [.titled, .fullSizeContentView, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false))
     window!.contentViewController = MainViewController()
     window!.titleVisibility = .hidden
     window!.titlebarAppearsTransparent = true
+    window!.hasShadow = false
+    window!.invalidateShadow()
+    window!.resizeIncrements = NSMakeSize(1.0, 1.0);
 
     window!.center()
     window!.isMovableByWindowBackground = true
@@ -28,5 +31,11 @@ class MainWindowController: NSWindowController {
     let customToolbar = NSToolbar()
     customToolbar.showsBaselineSeparator = false
     window!.toolbar = customToolbar
+
+    window!.delegate = self
+  }
+
+  func windowDidResize(notification: NSNotification) {
+    print(window!.contentViewController!.view.bounds)
   }
 }

@@ -2,8 +2,6 @@ import fix_yahoo_finance as TickerData
 
 import json
 
-# print("Beginning script for autocomplete")
-
 stocks = ["AAPL", "FB", "GOOG", "MSFT", "GE", "TSLA", "INTC", "IBM"]
 
 stocks_data = []
