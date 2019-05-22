@@ -47,7 +47,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
                                            "^VIX":     URL(string: "https://i.imgur.com/g8c6BGB.png")!]
 
   override func loadView() {
-    self.view = NSView(frame: CGRect(x: 0, y: 0, width: 1000, height: 650))
+    self.view = NSView(frame: NSScreen.main!.visibleFrame)
     self.view.wantsLayer = true
     let colorTop = NSColor(red: 80 / 255, green: 98 / 255, blue: 93 / 255, alpha: 1).cgColor
     let colorBottom = NSColor(red: 38 / 255, green: 43 / 255, blue: 60 / 255, alpha: 1).cgColor
@@ -217,7 +217,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
       NSAnimationContext.endGrouping()
 
       let autoCompleteTask = Process()
-      autoCompleteTask.executableURL = URL(fileURLWithPath: "/usr/bin/python")
+      autoCompleteTask.launchPath = "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3"
       autoCompleteTask.arguments = ["../../Data/AutoComplete/autocomplete_ticker_name.py", (self.searchBG.subviews[2] as? NSTextField)!.stringValue]
       do {
         try autoCompleteTask.launch()
@@ -239,7 +239,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
           card.layer!.cornerRadius = 5
           card.layer!.backgroundColor = NSColor.black.withAlphaComponent(0.8).cgColor
           card.alphaValue = 0.0
-          (self.searchBG.subviews.last! as? NSScrollView)!.documentView!.addSubview(card)
+          self.autocompleteView.documentView!.addSubview(card)
 
           let stock = NSTextField(frame: CGRect(x: 20, y: 5, width: 200, height: 30))
           stock.isBezeled = false
@@ -256,7 +256,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
           fullName.drawsBackground = false
           fullName.textColor = NSColor.lightGray
           fullName.font = NSFont.systemFont(ofSize: 25)
-          fullName.stringValue = ((autoCompleteData![autoCompleteData!.count - 1 - i] as? NSDictionary)!["longName"] as? String)!
+          fullName.stringValue = (autoCompleteData![autoCompleteData!.count - 1 - i] as? NSDictionary)!["longName"] as? String ?? ((autoCompleteData![autoCompleteData!.count - 1 - i] as? NSDictionary)!["shortName"] as? String)!
           card.addSubview(fullName)
 
           let exchange = NSTextField(frame: CGRect(x: 25 + ((autoCompleteData![autoCompleteData!.count - 1 - i] as? NSDictionary)!["symbol"] as? String)!.width(withConstrainedHeight: 75, font: NSFont.boldSystemFont(ofSize: 25)), y: 15, width: 200, height: 20))
@@ -322,10 +322,30 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
           card.addTrackingArea(NSTrackingArea.init(rect: card.bounds, options: [NSTrackingArea.Options.mouseEnteredAndExited, NSTrackingArea.Options.activeAlways], owner: self, userInfo: nil))
 
           if y_pos > self.autocompleteView.documentView!.frame.size.height {
-            (self.searchBG.subviews.last! as? NSScrollView)!.documentView!.frame.size.height += y_pos
+            self.autocompleteView.documentView!.frame.size.height += 95
           }
 
           self.autocompleteView.documentView!.scroll(NSPoint(x: 0, y: self.autocompleteView.documentView!.bounds.size.height))
+        }
+
+        if autoCompleteData!.count == 0 {
+          let lbl = NSTextField(frame: NSRect(x: 20, y: (self.searchBG.subviews.last! as? NSScrollView)!.documentView!.frame.size.height / 2 - 10, width: (self.searchBG.subviews.last! as? NSScrollView)!.documentView!.frame.size.width - 40, height: 50))
+          lbl.isEditable = false
+          lbl.isBezeled = false
+          lbl.drawsBackground = false
+          lbl.textColor = NSColor.darkGray
+          lbl.alignment = NSTextAlignment.center
+          lbl.stringValue = "No Results Found"
+          lbl.font = NSFont.systemFont(ofSize: 25)
+          lbl.alphaValue = 0.0
+
+          (self.searchBG.subviews.last! as? NSScrollView)!.documentView!.addSubview(lbl)
+
+          NSAnimationContext.beginGrouping()
+          NSAnimationContext.current.duration = 1.0
+          lbl.animator().alphaValue = 1.0
+          lbl.animator().frame.origin.y += 20
+          NSAnimationContext.endGrouping()
         }
       } catch {
         print(error.localizedDescription)
@@ -398,7 +418,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
   }
 
   func displayFeaturedSection() {
-    featuredStocksView = NSView(frame: CGRect(x: 100, y: 75, width: 350, height: 500))
+    featuredStocksView = NSView(frame: CGRect(x: (self.view.frame.size.width / 2) - 410, y: (self.view.frame.size.height / 2) - 250, width: 350, height: 500))
     let featuredStocksTTL = NSTextField(frame: CGRect(x: 0, y: 475, width: 350, height: 45))
     featuredStocksTTL.isEditable = false
     featuredStocksTTL.drawsBackground = false
@@ -412,7 +432,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
     featuredStocksView.addSubview(featuredStocksTTL)
     self.view.addSubview(featuredStocksView)
 
-    featuredTickerView = NSView(frame: CGRect(x: 550, y: 75, width: 350, height: 500))
+    featuredTickerView = NSView(frame: CGRect(x: (self.view.frame.size.width / 2) + 50, y: (self.view.frame.size.height / 2) - 250, width: 350, height: 500))
     let featuredTickerTTL = NSTextField(frame: CGRect(x: 0, y: 475, width: 350, height: 45))
     featuredTickerTTL.isEditable = false
     featuredTickerTTL.drawsBackground = false
@@ -530,7 +550,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
           let currentPrice = ((autoCompleteData?[i] as? NSDictionary)?["ask"] as? Double) ?? 0.0
           let priceChange = ((autoCompleteData![i] as? NSDictionary)!["regularMarketChangePercent"] as? Double)!
           let percentChange = ((autoCompleteData![i] as? NSDictionary)!["regularMarketChange"] as? Double)!
-          
+
           StockStructer.mainStock = StockStructer(symbol: symbol, fullName: fullName, regionMarket: regionMarket, currentPrice: currentPrice, priceChange: priceChange, percentChange: percentChange)
 
           break

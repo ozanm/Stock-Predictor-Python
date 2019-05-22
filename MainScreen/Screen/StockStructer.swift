@@ -19,7 +19,6 @@ public class StockStructer {
   }
 
   // ACCESSORS
-
   public func getSymbol() -> String {
     return self.symbol
   }
@@ -45,7 +44,6 @@ public class StockStructer {
   }
 
   // SETTERS
-
   public func setSymbol(to symbol: String) {
     self.symbol = symbol
   }

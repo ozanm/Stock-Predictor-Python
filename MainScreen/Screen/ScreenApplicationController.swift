@@ -13,7 +13,8 @@ class AppDelegate: NSWindowController, NSApplicationDelegate, NSWindowDelegate {
 
 class MainWindowController: NSWindowController, NSWindowDelegate {
   convenience init() {
-    self.init(window: NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1000, height: 650), styleMask: [.titled, .fullSizeContentView, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false))
+    self.init(window: NSWindow(contentRect: NSScreen.main!.visibleFrame, styleMask: [.titled, .fullSizeContentView, .closable, .miniaturizable], backing: .buffered, defer: false))
+    window!.delegate = self
     window!.contentViewController = MainViewController()
     window!.titleVisibility = .hidden
     window!.titlebarAppearsTransparent = true
@@ -29,12 +30,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
     customToolbar.showsBaselineSeparator = false
     window!.toolbar = customToolbar
 
-    window!.delegate = self
-  }
-
-  func windowWillResize(notification: NSNotification) {
-    print("CALLED")
-    self.window!.contentViewController!.view.subviews[0].frame.origin = NSPoint(x: self.window!.contentViewController!.view.bounds.size.width - 60, y: self.window!.contentViewController!.view.bounds.size.height - 80)
+    NotificationCenter.default.addObserver(self, selector: Selector("windowDidResize:"), name: NSWindow.didResizeNotification, object: nil)
   }
 }
 

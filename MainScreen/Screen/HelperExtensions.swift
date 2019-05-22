@@ -39,6 +39,31 @@ extension NSImageView {
   }
 }
 
+public class Excecute {
+  public static func execCommand(command: String, args: [String]) {
+    let autoCompleteTask = Process()
+    autoCompleteTask.launchPath = command
+    autoCompleteTask.arguments = args
+    do {
+      try autoCompleteTask.launch()
+    } catch {
+      print(error.localizedDescription)
+    }
+  }
+}
+
+extension Date {
+  public static func getNumberOfMonths() -> Int {
+    let dateComponents = DateComponents(year: Calendar.current.component(.year, from: Date()), month: Calendar.current.component(.month, from: Date()))
+    let calendar = Calendar.current
+    let date = calendar.date(from: dateComponents)!
+
+    let range = calendar.range(of: .day, in: .month, for: date)!
+
+    return range.count
+  }
+}
+
 public class JSON {
   public static func readJSONFromFile(fileName: String) -> Any? {
     var json: Any?
@@ -75,4 +100,38 @@ extension NSBezierPath {
         }
         return path
     }
+}
+
+public class Point: NSObject {
+  public var x: Int!
+  public var y: Int!
+
+  public init(x: Int, y: Int) {
+    self.x = x
+    self.y = y
+  }
+
+  public override var description: String { return "Point(x: \(self.x!), y: \(self.y!))" }
+}
+
+public class Sorter {
+  public static func sort(arr: [Double]) -> [Double] {
+    var output : [Double] = arr
+    for i in 0..<arr.count {
+      var minIndex = i
+      var minValue = arr[i]
+      for j in i..<arr.count {
+        if arr[j] < minValue {
+          minIndex = j
+          minValue = arr[j]
+        }
+      }
+
+      let temp = output[minIndex]
+      output[minIndex] = arr[i]
+      output[i] = temp
+    }
+
+    return output
+  }
 }

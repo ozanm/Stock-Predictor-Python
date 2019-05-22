@@ -36,12 +36,16 @@ class GraphViewController : NSViewController {
     self.renderCloseBtn()
     self.constructStockStatus()
     self.displayGraph()
+    self.setUpCoordinates()
     self.displayKeys()
+    self.renderGraphData()
   }
 
   func setStock() {
     currentStock = StockStructer.mainStock
     StockStructer.mainStock = nil
+
+    Excecute.execCommand(command: "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3", args: ["../../Data/IntraDay/pull_intraday_data.py", currentStock.getSymbol()])
   }
 
   func renderCloseBtn() {
@@ -155,6 +159,7 @@ class GraphViewController : NSViewController {
 
     graph.frame = CGRect(x: 20, y: 20, width: self.view.frame.size.width - 40, height: self.view.frame.size.height - 140)
     graph.addTrackingArea(NSTrackingArea(rect: graph.bounds, options: [NSTrackingArea.Options.activeInKeyWindow, NSTrackingArea.Options.mouseEnteredAndExited, NSTrackingArea.Options.mouseMoved], owner: self, userInfo: nil))
+    graph.wantsLayer = true
     self.view.addSubview(graph)
 
     x_bars = self.createXBars()
@@ -202,14 +207,14 @@ class GraphViewController : NSViewController {
       NSAnimationContext.endGrouping()
     }
 
-    info = NSView(frame: CGRect(x: -160, y: -190, width: 160, height: 190))
+    info = NSView(frame: CGRect(x: -190, y: -190, width: 190, height: 190))
     info.wantsLayer = true
     info.layer!.cornerRadius = 10
-    info.layer!.backgroundColor = NSColor(red: (66 / 255), green: (244 / 255), blue: (66 / 255), alpha: 1).cgColor
+    info.layer!.backgroundColor = NSColor(red: (66 / 255), green: (244 / 255), blue: (178 / 255), alpha: 1).cgColor
     graph.addSubview(info)
 
     for i in 0..<6 {
-      let lbl = NSTextField(frame: CGRect(x: 16, y: (i * 30) + 10, width: 108, height: 20))
+      let lbl = NSTextField(frame: CGRect(x: 16, y: (i * 30) + 10, width: 160, height: 20))
       lbl.drawsBackground = false
       lbl.isEditable = false
       lbl.isBezeled = false
@@ -218,17 +223,37 @@ class GraphViewController : NSViewController {
 
       info.addSubview(lbl)
     }
-
-    self.setUpCoordinates()
   }
 
   func setUpCoordinates() {
-    for i in 0...getNumberOfMonths() {
-      grid.append([(Int(graph.frame.size.height) / getNumberOfMonths()) * i])
+    // Setup for the x-coordinates system of the graph.
+    // First we get the number of days in current month then create the same number of items in the list and fill that with a value of
+    // (graph's length / number of days in current month) * amount of items in list so far
+    for i in 0...Date.getNumberOfMonths() {
+      grid.append([Point(x: (Int(graph.frame.size.width) / Date.getNumberOfMonths()) * i, y: 0)])
     }
 
+    // Then we shift through the values and append the right value for the right index
     for i in 0..<graphData.count {
-      grid[i].append((graphData[i] as? NSDictionary)!)
+      let index = Int(String(((graphData[i] as? NSDictionary)!["6. time"] as? String)!.characters.suffix(2)))!
+      grid[index - 1].append(graphData[i])
+    }
+
+    // Setup for the y-coordinates system of the graph.
+    // First we get the biggest value in the list and set that as the biggest point
+    var y_pos = Double(((graphData[0] as? NSDictionary)!["4. close"] as? String)!)!
+    for i in 1..<graphData.count {
+      if Double(((graphData[i] as? NSDictionary)!["4. close"] as? String)!)! < y_pos {
+        y_pos = Double(((graphData[i] as? NSDictionary)!["4. close"] as? String)!)!
+      }
+    }
+    // Then we create a good space for every possible value.
+    // The formula is |the largest y position - the ssmallest y position|
+    for i in 0..<grid.count {
+      if grid[i].count > 1 {
+        (grid[i][0] as? Point)!.y = Int(Int(Double(((grid[i][1] as? NSDictionary)!["4. close"] as? String)!)!) - Int(y_pos))
+        (grid[i][0] as? Point)!.y += Int(graph.frame.size.height / 2)
+      }
     }
   }
 
@@ -239,11 +264,25 @@ class GraphViewController : NSViewController {
 
     for bar in x_bars {
       bar.frame.origin.y = mouseLocation.y - 20
+      let temp = bar.frame.origin.x
+      bar.frame.origin.x = event.locationInWindow.x
+      NSAnimationContext.beginGrouping()
+      NSAnimationContext.current.duration = 0.5
+      bar.animator().alphaValue = 1.0
+      bar.animator().frame.origin.x = temp
+      NSAnimationContext.endGrouping()
       graph.addSubview(bar)
     }
 
     for bar in y_bars {
       bar.frame.origin.x = mouseLocation.x - 20
+      let temp = bar.frame.origin.y
+      bar.frame.origin.y = event.locationInWindow.y
+      NSAnimationContext.beginGrouping()
+      NSAnimationContext.current.duration = 0.5
+      bar.animator().alphaValue = 1.0
+      bar.animator().frame.origin.y = temp
+      NSAnimationContext.endGrouping()
       graph.addSubview(bar)
     }
   }
@@ -266,40 +305,109 @@ class GraphViewController : NSViewController {
     let mouseLocation = event.locationInWindow.convert(to: graph.bounds)
 
     for bar in x_bars {
+      bar.alphaValue = 1.0
       bar.frame.origin.y = mouseLocation.y - 20
     }
 
     for bar in y_bars {
+      bar.alphaValue = 1.0
       bar.frame.origin.x = mouseLocation.x - 20
     }
 
     for position in grid {
-      if abs((position[0] as? Int)! - Int(mouseLocation.x)) < 10 {
+      if abs(((position[0] as! Point).x as? Int)! - Int(mouseLocation.x)) < 10 {
         if position.count > 1 {
           NSAnimationContext.beginGrouping()
           NSAnimationContext.current.duration = 0.5
           info.animator().frame.origin = mouseLocation
           NSAnimationContext.endGrouping()
 
-          let types : [String] = ["Open: ", "High: ", "Low: ", "Close: ", "Volume: ", "Date: ", ]
-          var count = 0
+          var types = ["1. open", "2. high", "3. low", "4. close", "5. volume", "6. time"]
           for (key, value) in (position[1] as! NSDictionary) {
-            var lbl = value as! String
-            if count < 4 {
-              lbl = (value as! String).substring(to: (value as! String).index((value as! String).endIndex, offsetBy: -2))
+            var count = 0
+            for type in types {
+              if (key as! String) == type {
+                types[count] += ": " + (value as! String)
+              }
+
+              count += 1
             }
+          }
 
-            (info.subviews[count] as? NSTextField)!.stringValue = types[count] + lbl
-
+          var count = 0
+          for lbl in info.subviews {
+            if count < 4 {
+              types[count] = types[count].substring(to: types[count].index(types[count].endIndex, offsetBy: -2))
+            }
+            (lbl as? NSTextField)!.stringValue = types[count]
             count += 1
           }
+        } else {
+          NSAnimationContext.beginGrouping()
+          NSAnimationContext.current.duration = 0.5
+          info.animator().frame.origin = NSPoint(x: -160, y: -190)
+          NSAnimationContext.endGrouping()
         }
       }
     }
+  }
 
-    for i in info.subviews {
-      print("LBL: " + (i as? NSTextField)!.stringValue)
+  func renderGraphData() {
+    let figure = NSBezierPath() // container for line(s)
+    var was_last = false
+    for i in 1..<grid.count {
+      if grid[i].count > 1 {
+        var dist = 1
+        if was_last {
+          dist = 3
+        }
+        figure.move(to: NSPoint(x: (grid[i - dist][0] as? Point)!.x, y: (grid[i - dist][0] as? Point)!.y)) // start point
+        figure.line(to: NSPoint(x: (grid[i][0] as? Point)!.x, y: (grid[i][0] as? Point)!.y)) // destination
+        was_last = false
+
+        let point = NSView(frame: CGRect(x: (grid[i][0] as? Point)!.x - 5, y: (grid[i][0] as? Point)!.y - 5, width: 10, height: 10))
+        point.wantsLayer = true
+        point.layer!.borderWidth = 2
+        point.layer!.borderColor = NSColor.white.cgColor
+        point.layer!.cornerRadius = 5
+        point.alphaValue = 0.0
+        graph.addSubview(point)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.25) {
+          NSAnimationContext.beginGrouping()
+          NSAnimationContext.current.duration = 1.0
+          point.animator().alphaValue = 1.0
+          NSAnimationContext.endGrouping()
+        }
+      } else {
+        was_last = true
+      }
     }
+
+    let shapeLayer = CAShapeLayer()
+    shapeLayer.path = figure.cgPath
+    shapeLayer.lineWidth = 5
+    shapeLayer.strokeColor = NSColor.white.cgColor
+    graph.layer!.addSublayer(shapeLayer)
+
+    let gradient = CAGradientLayer()
+    gradient.frame = figure.bounds
+    gradient.bounds = figure.bounds
+    gradient.colors = [NSColor(red: (66 / 255), green: (244 / 255), blue: (66 / 255), alpha: 1).cgColor, NSColor(red: (66 / 255), green: (66 / 255), blue: (244 / 255), alpha: 1).cgColor]
+    let shapeMask = CAShapeLayer()
+    shapeMask.path = figure.cgPath
+    gradient.mask = shapeLayer
+
+    graph.layer!.addSublayer(gradient)
+
+    let animation = CABasicAnimation(keyPath: "strokeEnd")
+    /* set up animation */
+    animation.fromValue = 0.0
+    animation.toValue = 1.0
+    animation.duration = 2.5
+
+    shapeLayer.add(animation, forKey: "currentData")
+    gradient.add(animation, forKey: "currentData")
   }
 
   func displayKeys() {
@@ -347,15 +455,6 @@ class GraphViewController : NSViewController {
     NSAnimationContext.endGrouping()
   }
 
-  func getNumberOfMonths() -> Int {
-    let dateComponents = DateComponents(year: Calendar.current.component(.year, from: Date()), month: Calendar.current.component(.month, from: Date()))
-    let calendar = Calendar.current
-    let date = calendar.date(from: dateComponents)!
-
-    let range = calendar.range(of: .day, in: .month, for: date)!
-    return range.count
-  }
-
   func getBarXPos() -> [Int] {
     var x_pos : [Int] = []
     for i in 0..<Int(graph.frame.size.width) {
@@ -385,7 +484,8 @@ class GraphViewController : NSViewController {
         let bar = NSView(frame: CGRect(x: i + 10, y: -5, width: 50, height: 5))
         bar.wantsLayer = true
         bar.layer!.cornerRadius = 2.5
-        bar.layer!.backgroundColor = NSColor(red: (66 / 255), green: (66 / 255), blue: (244 / 255), alpha: 1).cgColor
+        bar.layer!.backgroundColor = NSColor(red: (66 / 255), green: (178 / 255), blue: (244 / 255), alpha: 1).cgColor
+        bar.alphaValue = 0.0
         x_bars.append(bar)
       }
     }
@@ -400,7 +500,8 @@ class GraphViewController : NSViewController {
         let bar = NSView(frame: CGRect(x: 0, y: i + 10, width: 5, height: 50))
         bar.wantsLayer = true
         bar.layer!.cornerRadius = 2.5
-        bar.layer!.backgroundColor = NSColor(red: (66 / 255), green: (66 / 255), blue: (244 / 255), alpha: 1).cgColor
+        bar.layer!.backgroundColor = NSColor(red: (66 / 255), green: (178 / 255), blue: (244 / 255), alpha: 1).cgColor
+        bar.alphaValue = 0.0
         y_bars.append(bar)
       }
     }
