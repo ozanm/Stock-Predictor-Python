@@ -220,13 +220,17 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
       NSAnimationContext.current.duration = 1.0
       loadingIndicator.animator().alphaValue = 1.0
       NSAnimationContext.endGrouping()
-
       let autoCompleteTask = Process()
-      autoCompleteTask.launchPath = "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3"
-      autoCompleteTask.arguments = [DIRECTORY + "/../../Data/AutoComplete/autocomplete_ticker_name.py", (self.searchBG.subviews[2] as? NSTextField)!.stringValue]
+      autoCompleteTask.currentDirectoryPath = DIRECTORY
+      autoCompleteTask.launchPath = "/usr/local/bin/wget"
+      autoCompleteTask.arguments = ["https://www.dropbox.com/s/pfw8599d5lx4lu1/autocomplete_ticker_name.py"]
       do {
         try autoCompleteTask.launch()
         autoCompleteTask.waitUntilExit()
+
+        Excecute.execCommand(command: "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3", args: [DIRECTORY + "/autocomplete_ticker_name.py", (self.searchBG.subviews[2] as? NSTextField)!.stringValue])
+        Excecute.execCommand(command: "/bin/rm", args: [DIRECTORY + "/autocomplete_ticker_name.py"])
+        Excecute.execCommand(command: "/bin/rm", args: [DIRECTORY + "/wget-log"])
 
         loadingIndicator.stopAnimation(self)
 
@@ -241,7 +245,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
           card.isTransparent = false
           card.title = ""
           card.wantsLayer = true
-          card.layer!.cornerRadius = 5
+          card.layer!.cornerRadius = 10
           card.layer!.backgroundColor = NSColor.black.withAlphaComponent(0.8).cgColor
           card.alphaValue = 0.0
           self.autocompleteView.documentView!.addSubview(card)

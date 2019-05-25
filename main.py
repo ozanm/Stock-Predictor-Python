@@ -19,7 +19,7 @@ pyperclip.copy(DIRECTORY)
 
 class Setup: # Uses methods to make sure app won't carsh and updates starting data
     activatedSystems = { "Internet": False, "Indicies": False, "Stocks": False } # the test/check varibales
-    def bind(self, process):
+    def bind(self, process, callback):
         """ Runs the methods for making sure all the requirements are in place before excecuting app's contents. """
         process.run(shell=True)
         self.checkForInternetConnection()
@@ -28,6 +28,7 @@ class Setup: # Uses methods to make sure app won't carsh and updates starting da
 
         if self.allSystemsActivated():
             process.process.terminate()
+            callback.run(shell=True)
 
     def checkForInternetConnection(self):
         """ Checks for the internet connect by trying connect to one of Google's ip and returns the status of the connection. """
@@ -91,7 +92,12 @@ class LoadingScreen(Command): # Made as a placeholder for better code
         """ Creates a command class for displaying the loading screen. """
         super(LoadingScreen, self).__init__(DIRECTORY + "/LoadingScreen/main")
 
+class MainScreen(Command): # Made as a placeholder for better code
+    def __init__(self):
+        """ Creates a command class for displaying the main window. """
+        # For the rest of the program, making sure that the directory is in the project
+        os.chdir(DIRECTORY + "/MainScreen/Screen")
+        super(MainScreen, self).__init__(DIRECTORY + "/MainScreen/Screen/main")
+
 if __name__ == '__main__': # Running main thread
-    system = Setup().bind(process=LoadingScreen()) # Displaying loading screen
-    Command(DIRECTORY + "/MainScreen/Screen/main").run(shell=True) # Displaying homepage of app
-    sys.exit(0) # Finished with script so exting
+    system = Setup().bind(process=LoadingScreen(), callback=MainScreen()) # Displaying loading screen

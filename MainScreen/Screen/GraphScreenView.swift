@@ -41,8 +41,11 @@ class GraphViewController : NSViewController {
     currentStock = StockStructer.mainStock
     StockStructer.mainStock = nil
 
-    Excecute.execCommand(command: "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3", args: [DIRECTORY + "/Data/IntraDay/pull_intraday_data.py", currentStock.getSymbol()])
-    
+    Excecute.execCommand(command: "/usr/local/bin/wget", args: ["https://www.dropbox.com/s/67anjgkcbik3hkp/pull_intraday_data.py"])
+    Excecute.execCommand(command: "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3", args: [DIRECTORY + "/pull_intraday_data.py", currentStock.getSymbol()])
+    Excecute.execCommand(command: "/bin/rm", args: [DIRECTORY + "/pull_intraday_data.py"])
+    Excecute.execCommand(command: "/bin/rm", args: [DIRECTORY + "/wget-log"])
+
     graphData = (JSON.readJSONFromFile(fileName: "../../Data/IntraDay/intraday_data") as? [NSDictionary])!
   }
 
