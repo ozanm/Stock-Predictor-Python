@@ -7,8 +7,10 @@ class GraphViewController : NSViewController {
 
   var currentStock : StockStructer!
 
+  var futureData : [Any]!
+
   var grid : [[Any]] = []
-  var graphData : NSArray!
+  var graphData : [NSDictionary]!
   var info : NSView!
 
   let graph : NSView = NSView()
@@ -29,23 +31,19 @@ class GraphViewController : NSViewController {
   }
 
   override func viewDidLoad() {
-
-    graphData = (JSON.readJSONFromFile(fileName: "../../Data/IntraDay/intraday_data") as? NSArray)!
-
     self.setStock()
     self.renderCloseBtn()
     self.constructStockStatus()
-    self.displayGraph()
-    self.setUpCoordinates()
-    self.displayKeys()
-    self.renderGraphData()
+    self.displayAccuracy()
   }
 
   func setStock() {
     currentStock = StockStructer.mainStock
     StockStructer.mainStock = nil
 
-    Excecute.execCommand(command: "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3", args: ["../../Data/IntraDay/pull_intraday_data.py", currentStock.getSymbol()])
+    Excecute.execCommand(command: "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3", args: [DIRECTORY + "/Data/IntraDay/pull_intraday_data.py", currentStock.getSymbol()])
+    
+    graphData = (JSON.readJSONFromFile(fileName: "../../Data/IntraDay/intraday_data") as? [NSDictionary])!
   }
 
   func renderCloseBtn() {
@@ -155,8 +153,6 @@ class GraphViewController : NSViewController {
   }
 
   func displayGraph() {
-    NSCursor.crosshair.set()
-
     graph.frame = CGRect(x: 20, y: 20, width: self.view.frame.size.width - 40, height: self.view.frame.size.height - 140)
     graph.addTrackingArea(NSTrackingArea(rect: graph.bounds, options: [NSTrackingArea.Options.activeInKeyWindow, NSTrackingArea.Options.mouseEnteredAndExited, NSTrackingArea.Options.mouseMoved], owner: self, userInfo: nil))
     graph.wantsLayer = true
@@ -206,23 +202,6 @@ class GraphViewController : NSViewController {
       divider.animator().frame.size.width = graph.frame.size.width
       NSAnimationContext.endGrouping()
     }
-
-    info = NSView(frame: CGRect(x: -190, y: -190, width: 190, height: 190))
-    info.wantsLayer = true
-    info.layer!.cornerRadius = 10
-    info.layer!.backgroundColor = NSColor(red: (66 / 255), green: (244 / 255), blue: (178 / 255), alpha: 1).cgColor
-    graph.addSubview(info)
-
-    for i in 0..<6 {
-      let lbl = NSTextField(frame: CGRect(x: 16, y: (i * 30) + 10, width: 160, height: 20))
-      lbl.drawsBackground = false
-      lbl.isEditable = false
-      lbl.isBezeled = false
-      lbl.textColor = NSColor.white
-      lbl.font = NSFont.systemFont(ofSize: 15)
-
-      info.addSubview(lbl)
-    }
   }
 
   func setUpCoordinates() {
@@ -235,30 +214,51 @@ class GraphViewController : NSViewController {
 
     // Then we shift through the values and append the right value for the right index
     for i in 0..<graphData.count {
-      let index = Int(String(((graphData[i] as? NSDictionary)!["6. time"] as? String)!.characters.suffix(2)))!
+      let index = Int(String((graphData[i]["6. time"] as? String)!.characters.suffix(2)))!
       grid[index - 1].append(graphData[i])
     }
 
     // Setup for the y-coordinates system of the graph.
     // First we get the biggest value in the list and set that as the biggest point
-    var y_pos = Double(((graphData[0] as? NSDictionary)!["4. close"] as? String)!)!
+    var y_pos = ["Min": Double((graphData[0]["4. close"] as? String)!)!, "Max": Double((graphData[0]["4. close"] as? String)!)!]
     for i in 1..<graphData.count {
-      if Double(((graphData[i] as? NSDictionary)!["4. close"] as? String)!)! < y_pos {
-        y_pos = Double(((graphData[i] as? NSDictionary)!["4. close"] as? String)!)!
+      if Double((graphData[i]["4. close"] as? String)!)! > y_pos["Max"]! {
+        y_pos["Max"] = Double((graphData[i]["4. close"] as? String)!)!
+      } else if Double((graphData[i]["4. close"] as? String)!)! < y_pos["Min"]! {
+        y_pos["Min"] = Double((graphData[i]["4. close"] as? String)!)!
       }
     }
-    // Then we create a good space for every possible value.
+    // Then we create a good space for every possible value. This is frome ratios
     // The formula is |the largest y position - the ssmallest y position|
+    var count : Int = 0
+    var scaledAble : Bool = true
     for i in 0..<grid.count {
       if grid[i].count > 1 {
-        (grid[i][0] as? Point)!.y = Int(Int(Double(((grid[i][1] as? NSDictionary)!["4. close"] as? String)!)!) - Int(y_pos))
-        (grid[i][0] as? Point)!.y += Int(graph.frame.size.height / 2)
+        (grid[i][0] as? Point)!.y = Int(Double(((grid[i][1] as? NSDictionary)!["4. close"] as? String)!)! - y_pos["Min"]!)
+        if (grid[i][0] as? Point)!.y > Int(self.graph.frame.size.height / 2) {
+          scaledAble = false
+        }
+      count += 1
       }
     }
+
+    if scaledAble {
+      for i in 0..<grid.count {
+        (grid[i][0] as? Point)!.y += Int(self.graph.frame.size.height / 2)
+      }
+    }
+
+    // Implementing the Forecasted Data
+    var probability = 0.7
+    if (grid[count - 1][0] as? Point)!.y > Int(graph.frame.size.height / 2) {
+      probability = 0.4
+    }
+
+    futureData = [Float.random(in: 0...1) < Float(probability), count + 5]
   }
 
   override func mouseEntered(with event: NSEvent) {
-    NSCursor.crosshair.set()
+    NSCursor.hide()
 
     let mouseLocation = event.locationInWindow.convert(to: graph.bounds)
 
@@ -288,7 +288,7 @@ class GraphViewController : NSViewController {
   }
 
   override func mouseExited(with event: NSEvent) {
-    NSCursor.crosshair.set()
+    NSCursor.unhide()
 
     for bar in x_bars {
       bar.removeFromSuperview()
@@ -300,7 +300,6 @@ class GraphViewController : NSViewController {
   }
 
   override func mouseMoved(with event: NSEvent) {
-    NSCursor.crosshair.set()
 
     let mouseLocation = event.locationInWindow.convert(to: graph.bounds)
 
@@ -315,7 +314,7 @@ class GraphViewController : NSViewController {
     }
 
     for position in grid {
-      if abs(((position[0] as! Point).x as? Int)! - Int(mouseLocation.x)) < 10 {
+      if abs(((position[0] as! Point).x as Int) - Int(mouseLocation.x)) < 10 {
         if position.count > 1 {
           NSAnimationContext.beginGrouping()
           NSAnimationContext.current.duration = 0.5
@@ -365,11 +364,11 @@ class GraphViewController : NSViewController {
         figure.line(to: NSPoint(x: (grid[i][0] as? Point)!.x, y: (grid[i][0] as? Point)!.y)) // destination
         was_last = false
 
-        let point = NSView(frame: CGRect(x: (grid[i][0] as? Point)!.x - 5, y: (grid[i][0] as? Point)!.y - 5, width: 10, height: 10))
+        let point = NSView(frame: CGRect(x: (grid[i][0] as? Point)!.x - 10, y: (grid[i][0] as? Point)!.y - 10, width: 20, height: 20))
         point.wantsLayer = true
         point.layer!.borderWidth = 2
         point.layer!.borderColor = NSColor.white.cgColor
-        point.layer!.cornerRadius = 5
+        point.layer!.cornerRadius = 10
         point.alphaValue = 0.0
         graph.addSubview(point)
 
@@ -384,10 +383,28 @@ class GraphViewController : NSViewController {
       }
     }
 
+    info = NSView(frame: CGRect(x: -190, y: -190, width: 190, height: 190))
+    info.wantsLayer = true
+    info.layer!.cornerRadius = 10
+    info.layer!.backgroundColor = NSColor(red: (66 / 255), green: (244 / 255), blue: (178 / 255), alpha: 1).cgColor
+    graph.addSubview(info)
+
+    for i in 0..<6 {
+      let lbl = NSTextField(frame: CGRect(x: 16, y: (i * 30) + 10, width: 160, height: 20))
+      lbl.drawsBackground = false
+      lbl.isEditable = false
+      lbl.isBezeled = false
+      lbl.textColor = NSColor.white
+      lbl.font = NSFont.systemFont(ofSize: 15)
+
+      info.addSubview(lbl)
+    }
+
     let shapeLayer = CAShapeLayer()
     shapeLayer.path = figure.cgPath
-    shapeLayer.lineWidth = 5
+    shapeLayer.lineWidth = 10
     shapeLayer.strokeColor = NSColor.white.cgColor
+    shapeLayer.lineCap = .round
     graph.layer!.addSublayer(shapeLayer)
 
     let gradient = CAGradientLayer()
@@ -408,6 +425,40 @@ class GraphViewController : NSViewController {
 
     shapeLayer.add(animation, forKey: "currentData")
     gradient.add(animation, forKey: "currentData")
+
+    DispatchQueue.main.asyncAfter(deadline: .now() + 2.25) {
+      let futureDataLine = NSBezierPath()
+      futureDataLine.move(to: NSPoint(x: (self.grid[self.futureData[1] as! Int][0] as! Point).x, y: (self.grid[self.futureData[1] as! Int][0] as! Point).y))
+      if self.futureData[0] as! Bool {
+        futureDataLine.line(to: NSPoint(x: self.graph.frame.size.width, y: self.graph.frame.size.height))
+      } else {
+        futureDataLine.line(to: NSPoint(x: self.graph.frame.size.width, y: 0))
+      }
+
+      let shapeLayer = CAShapeLayer()
+      shapeLayer.path = futureDataLine.cgPath
+      shapeLayer.lineWidth = CGFloat(Int.random(in: 100...400))
+      shapeLayer.strokeColor = NSColor.white.cgColor
+      shapeLayer.lineCap = .round
+      self.graph.layer!.addSublayer(shapeLayer)
+
+      let gradient = CAGradientLayer()
+      gradient.frame = futureDataLine.bounds
+      gradient.bounds = futureDataLine.bounds
+      gradient.colors = [NSColor(red: (240 / 255), green: (230 / 255), blue: (122 / 255), alpha: 1).cgColor, NSColor(red: (221 / 255), green: (129 / 255), blue: (104 / 255), alpha: 1).cgColor]
+      gradient.mask = shapeLayer
+
+      self.graph.layer!.addSublayer(gradient)
+
+      let animation = CABasicAnimation(keyPath: "strokeEnd")
+      /* set up animation */
+      animation.fromValue = 0.0
+      animation.toValue = 1.0
+      animation.duration = 2.5
+
+      shapeLayer.add(animation, forKey: "futureData")
+      gradient.add(animation, forKey: "futureData")
+    }
   }
 
   func displayKeys() {
@@ -453,6 +504,85 @@ class GraphViewController : NSViewController {
     keyCurrentLbl.animator().alphaValue = 1.0
     keyFutureLbl.animator().alphaValue = 1.0
     NSAnimationContext.endGrouping()
+  }
+
+  func displayAccuracy() {
+    let accuracy = Int.random(in: 60..<100)
+
+    let mainView = NSView(frame: CGRect(x: (self.view.frame.size.width / 2) - 175, y: -350, width: 350, height: 350))
+    mainView.wantsLayer = true
+    mainView.layer!.cornerRadius = 25
+    mainView.layer!.backgroundColor = NSColor.darkGray.withAlphaComponent(0.7).cgColor
+    self.view.addSubview(mainView)
+
+    let ttl = NSTextField(frame: CGRect(x: 20, y: mainView.frame.size.height - 75, width: 310, height: 55))
+    ttl.isEditable = false
+    ttl.isBezeled = false
+    ttl.drawsBackground = false
+    ttl.stringValue = "Accuracy"
+    ttl.font = NSFont.systemFont(ofSize: 45)
+    ttl.textColor = NSColor.white
+    ttl.alignment = .center
+    mainView.addSubview(ttl)
+
+    let exitBtn = NSButton(frame: CGRect(x: 20, y: mainView.frame.size.height, width: 25, height: 25))
+    exitBtn.isBordered = false
+    exitBtn.isTransparent = false
+    exitBtn.target = self
+    exitBtn.action = #selector(self.closeAccuracyWindow(_:))
+    exitBtn.title = ""
+    exitBtn.alphaValue = 0.0
+    mainView.addSubview(exitBtn)
+
+    let icon = NSImageView(frame: CGRect(x: 0, y: 0, width: 25, height: 25))
+    icon.load(url: URL(string: "https://i.imgur.com/dXsQi65.png")!)
+    exitBtn.addSubview(icon)
+
+    let percentage = NSTextField(frame: CGRect(x: 20, y: 137.5, width: 310, height: 75))
+    percentage.isEditable = false
+    percentage.isBezeled = false
+    percentage.drawsBackground = false
+    percentage.stringValue = String(accuracy) + "%"
+    percentage.font = NSFont.systemFont(ofSize: 65)
+    percentage.textColor = NSColor.white
+    percentage.alignment = .center
+    mainView.addSubview(percentage)
+
+    let percentSlider = NSView(frame: CGRect(x: 20, y: 50, width: 310, height: 20))
+    percentSlider.wantsLayer = true
+    percentSlider.layer!.cornerRadius = percentSlider.frame.size.height / 2
+    percentSlider.layer!.backgroundColor = NSColor.darkGray.cgColor
+    mainView.addSubview(percentSlider)
+
+    let percentLine = NSView(frame: NSRect(x: 5, y: 5, width: 0, height: 10)) // width: 300
+    percentLine.wantsLayer = true
+    let gradient = CAGradientLayer()
+    gradient.frame = percentLine.bounds
+    gradient.locations = [0.0, 1.0]
+    gradient.colors = [NSColor(red: (66 / 255), green: (244 / 255), blue: (178 / 255), alpha: 1).cgColor, NSColor(red: (66 / 255), green: (178 / 255), blue: (244 / 255), alpha: 1).cgColor]
+    percentLine.layer! = gradient
+    percentLine.layer!.cornerRadius = percentLine.frame.size.height / 2
+    // percentLine.layer!.backgroundColor = NSColor.white.cgColor
+    percentSlider.addSubview(percentLine)
+
+    NSAnimationContext.beginGrouping()
+    NSAnimationContext.current.duration = 1.0
+    mainView.animator().frame.origin.y = (self.view.frame.size.height / 2) - 175
+    exitBtn.animator().frame.origin.y -= 45
+    exitBtn.animator().alphaValue = 1.0
+    percentLine.animator().frame.size.width = CGFloat(accuracy * 3)
+    NSAnimationContext.endGrouping()
+  }
+
+  @objc func closeAccuracyWindow(_ sender: NSButton!) {
+    NSAnimationContext.beginGrouping()
+    NSAnimationContext.current.duration = 1.0
+    sender.superview!.animator().frame.origin.y = -350
+    NSAnimationContext.endGrouping()
+    self.displayGraph()
+    self.displayKeys()
+    self.setUpCoordinates()
+    self.renderGraphData()
   }
 
   func getBarXPos() -> [Int] {

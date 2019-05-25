@@ -1,7 +1,11 @@
 public class StockStructer {
 
+  // System for organizing stock data
+  // mainStock static var is used for transporting data between controllers
+
   public static var mainStock : StockStructer!
 
+  // Quote Information from Yahoo! Datacenter
   private var symbol : String!
   private var fullName : String!
   private var regionMarket : String!
@@ -19,6 +23,7 @@ public class StockStructer {
   }
 
   // ACCESSORS
+
   public func getSymbol() -> String {
     return self.symbol
   }
@@ -44,6 +49,7 @@ public class StockStructer {
   }
 
   // SETTERS
+
   public func setSymbol(to symbol: String) {
     self.symbol = symbol
   }

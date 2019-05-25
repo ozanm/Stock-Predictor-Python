@@ -1,10 +1,11 @@
 import AppKit
 
-autoreleasepool { () -> () in
+autoreleasepool { () -> () in // Releases values right after termination
   NSApplication.shared.delegate = AppDelegate()
-  NSApplication.shared.setActivationPolicy(.accessory)
+  NSApplication.shared.setActivationPolicy(.regular)
   NSApplication.shared.activate(ignoringOtherApps: true)
   NSApplication.shared.run()
+  NSApplication.shared.dockTile.display() // Making App Icon
 }
 
 // Commands:

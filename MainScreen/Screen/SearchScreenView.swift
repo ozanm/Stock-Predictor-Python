@@ -64,6 +64,8 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
     super.viewDidLoad()
     // Do view setup here.
 
+    NSApplication.shared.applicationIconImage = NSImage(contentsOf: URL(string: "https://i.imgur.com/9YhK6XK.png")!)
+
     self.displaySearchBtn()
     self.displayFeaturedSection()
     self.constructInformationView()
@@ -133,7 +135,9 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
       searchField.drawsBackground = false
       searchField.isBezeled = false
       searchField.focusRingType = .none
+      searchField.placeholderString = "Search Stock Symbols"
       searchField.font = NSFont.systemFont(ofSize: 75)
+      searchField.alphaValue = 0.0
       searchField.becomeFirstResponder()
       self.searchBG.addSubview(searchField)
       let exitBtn = NSButton(frame: CGRect(x: self.self.view.bounds.size.width - 60, y: self.view.bounds.size.height - 35, width: 35, height: 35))
@@ -147,6 +151,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
       self.searchBG.addSubview(exitBtn)
       NSAnimationContext.beginGrouping()
       NSAnimationContext.current.duration = 1.0
+      searchField.animator().alphaValue = 1.0
       searchBG.animator().alphaValue = 1.0
       searchIcon.animator().alphaValue = 1.0
       searchIcon.animator().frame.origin.y += 150
@@ -218,7 +223,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
 
       let autoCompleteTask = Process()
       autoCompleteTask.launchPath = "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3"
-      autoCompleteTask.arguments = ["../../Data/AutoComplete/autocomplete_ticker_name.py", (self.searchBG.subviews[2] as? NSTextField)!.stringValue]
+      autoCompleteTask.arguments = [DIRECTORY + "/../../Data/AutoComplete/autocomplete_ticker_name.py", (self.searchBG.subviews[2] as? NSTextField)!.stringValue]
       do {
         try autoCompleteTask.launch()
         autoCompleteTask.waitUntilExit()
@@ -440,7 +445,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
     featuredTickerTTL.focusRingType = .none
     featuredTickerTTL.font = NSFont.systemFont(ofSize: 35)
     featuredTickerTTL.textColor = NSColor.white
-    featuredTickerTTL.stringValue = "Featured Tickers"
+    featuredTickerTTL.stringValue = "Featured Indicies"
     featuredTickerTTL.alignment = .center
     featuredTickerTTL.alphaValue = 0.0
     featuredTickerView.addSubview(featuredTickerTTL)

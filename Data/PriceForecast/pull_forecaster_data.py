@@ -3,22 +3,21 @@ import sys
 
 #import external pandas_datareader library with alias of web
 import pandas_datareader as web
+#import pasndas datareader for csv parsing
+import pandas as pd
 
 #import datetime internal datetime module
 #datetime is a Python module
-from datetime import datetime
+from datetime import datetime, date, time, timedelta
 
 #datetime is a data type within the datetime module
 start = datetime.today() - timedelta(days=96)
-end = datetime.now()
+end = datetime.today()
 
 #DataReader method name is case sensitive
-df = web.DataReader("nvda", sys.argv[1], start, end)
+df = web.DataReader(sys.argv[1], "yahoo", start, end)
 
-#invoke to_csv for df dataframe object from
-#DataReader method in the pandas_datareader library
-
-#..\first_yahoo_prices_to_csv_demo.csv must not
+#csv file must not
 #be open in another app, such as Excel
 
 df.to_csv('inserted_price_data.csv')

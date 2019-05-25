@@ -1,16 +1,20 @@
-import Cocoa
-import QuartzCore
+import Cocoa // Standard MAcOS swift libraries
+import QuartzCore // Core Graphics library
 
-public class Cell: NSButton {
+public class Cell: NSButton { // An Organizer of the stock buttons
 
-  var attribute : String!
+  var attribute : String! // Contains the stock symbol for the comupter to read
 
   public override func draw(_ dirtyRect: NSRect) {
-    super.draw(dirtyRect)
+    super.draw(dirtyRect) // Do the normal thing
   }
 }
 
+// Getting releative directory
+public let DIRECTORY : String = FileManager.default.currentDirectoryPath
+
 extension String {
+  // Inorder to style it, we have to get how tbig the string will be so that they don't overlap
   func width(withConstrainedHeight height: CGFloat, font: NSFont) -> CGFloat {
     let constraintRect = CGSize(width: .greatestFiniteMagnitude, height: height)
     let boundingBox = self.boundingRect(with: constraintRect, options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: font], context: nil)
@@ -20,12 +24,14 @@ extension String {
 }
 
 extension NSPoint {
+  // This takes a point, and sees where it would be in a subview
   func convert(to bounds: NSRect) -> NSPoint {
     return NSPoint(x: self.x - bounds.minX, y: self.y - bounds.minY)
   }
 }
 
 extension NSImageView {
+  // This loads a image from the specified URL
   func load(url: URL) {
     DispatchQueue.global().async { [weak self] in
       if let data = try? Data(contentsOf: url) {
@@ -40,12 +46,14 @@ extension NSImageView {
 }
 
 public class Excecute {
+  // This is used help run an external script
   public static func execCommand(command: String, args: [String]) {
-    let autoCompleteTask = Process()
-    autoCompleteTask.launchPath = command
-    autoCompleteTask.arguments = args
+    let task = Process()
+    task.launchPath = command
+    task.arguments = args
     do {
-      try autoCompleteTask.launch()
+      try task.launch()
+      task.waitUntilExit()
     } catch {
       print(error.localizedDescription)
     }
@@ -53,6 +61,7 @@ public class Excecute {
 }
 
 extension Date {
+  // This is used for the graph
   public static func getNumberOfMonths() -> Int {
     let dateComponents = DateComponents(year: Calendar.current.component(.year, from: Date()), month: Calendar.current.component(.month, from: Date()))
     let calendar = Calendar.current
@@ -65,6 +74,7 @@ extension Date {
 }
 
 public class JSON {
+  // This was used to get the data from the JSON files in the Data folders
   public static func readJSONFromFile(fileName: String) -> Any? {
     var json: Any?
     if let path = Bundle.main.path(forResource: fileName, ofType: "json") {
@@ -82,6 +92,7 @@ public class JSON {
 }
 
 extension NSBezierPath {
+  // This was a helper function for the animation of the line in the graph
     public var cgPath: CGPath {
         let path = CGMutablePath()
         var points = [CGPoint](repeating: .zero, count: 3)
@@ -103,6 +114,7 @@ extension NSBezierPath {
 }
 
 public class Point: NSObject {
+  // This point class was used in the graph
   public var x: Int!
   public var y: Int!
 
@@ -111,10 +123,12 @@ public class Point: NSObject {
     self.y = y
   }
 
+  // For printing the points to the console
   public override var description: String { return "Point(x: \(self.x!), y: \(self.y!))" }
 }
 
 public class Sorter {
+  // Sorts an array of Double values into ascending order
   public static func sort(arr: [Double]) -> [Double] {
     var output : [Double] = arr
     for i in 0..<arr.count {
