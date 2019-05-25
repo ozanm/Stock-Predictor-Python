@@ -9,9 +9,9 @@ Please make sure you have Swift 4 installed on your system.
 Double click on the Stock Predictor executable.
   
 # Screenshots
-![](http://url/to/img.png)
-![](http://url/to/img.png)
-![](http://url/to/img.png)
-![](http://url/to/img.png)
-![](http://url/to/img.png)
-![](http://url/to/img.png)
+![](https://github.com/ozanmirza1/Stock-Predictor-Python/blob/master/ScreenShots/ScreenShot1.png)
+![](https://github.com/ozanmirza1/Stock-Predictor-Python/blob/master/ScreenShots/ScreenShot2.png)
+![](https://github.com/ozanmirza1/Stock-Predictor-Python/blob/master/ScreenShots/ScreenShot3.png)
+![](https://github.com/ozanmirza1/Stock-Predictor-Python/blob/master/ScreenShots/ScreenShot4.png)
+![](https://github.com/ozanmirza1/Stock-Predictor-Python/blob/master/ScreenShots/ScreenShot5.png)
+![](https://github.com/ozanmirza1/Stock-Predictor-Python/blob/master/ScreenShots/ScreenShot6.png)
