@@ -15,3 +15,4 @@ Double click on the Stock Predictor executable.
 ![](https://github.com/ozanmirza1/Stock-Predictor-Python/blob/master/ScreenShots/ScreenShot4.png)
 ![](https://github.com/ozanmirza1/Stock-Predictor-Python/blob/master/ScreenShots/ScreenShot5.png)
 ![](https://github.com/ozanmirza1/Stock-Predictor-Python/blob/master/ScreenShots/ScreenShot6.png)
+![](https://github.com/ozanmirza1/Stock-Predictor-Python/blob/master/ScreenShots/ScreenShot7.png)
