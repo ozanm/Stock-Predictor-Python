@@ -321,7 +321,7 @@ class GraphViewController : NSViewController {
         if position.count > 1 {
           NSAnimationContext.beginGrouping()
           NSAnimationContext.current.duration = 0.5
-          info.animator().frame.origin = mouseLocation
+          info.animator().frame.origin = CGPoint(x: mouseLocation.x, y: 20)
           NSAnimationContext.endGrouping()
 
           var types = ["1. open", "2. high", "3. low", "4. close", "5. volume", "6. time"]

@@ -1,6 +1,6 @@
 import AppKit
 
-let mainFrame = NSRect(x: 0, y: 0, width: 1000, height: 650)
+let mainFrame = NSRect(x: 0, y: 0, width: 1100, height: 650)
 
 class AppDelegate: NSWindowController, NSApplicationDelegate, NSWindowDelegate { // Delegate object attached to NSApp
 
