@@ -47,7 +47,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
                                            "^VIX":     URL(string: "https://i.imgur.com/g8c6BGB.png")!]
 
   override func loadView() {
-    self.view = NSView(frame: NSScreen.main!.visibleFrame)
+    self.view = NSView(frame: mainFrame)
     self.view.wantsLayer = true
     let colorTop = NSColor(red: 80 / 255, green: 98 / 255, blue: 93 / 255, alpha: 1).cgColor
     let colorBottom = NSColor(red: 38 / 255, green: 43 / 255, blue: 60 / 255, alpha: 1).cgColor

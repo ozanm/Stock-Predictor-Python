@@ -21,7 +21,7 @@ class GraphViewController : NSViewController {
   let closeBtn : NSButton = NSButton()
 
   override func loadView() {
-    self.view = NSView(frame: NSScreen.main!.visibleFrame)
+    self.view = NSView(frame: mainFrame)
     self.view.wantsLayer = true
     self.view.layer!.backgroundColor = NSColor.black.cgColor
     self.view.layer!.cornerRadius = 35

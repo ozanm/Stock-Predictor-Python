@@ -1,5 +1,7 @@
 import AppKit
 
+let mainFrame = NSRect(x: 0, y: 0, width: 1000, height: 650)
+
 class AppDelegate: NSWindowController, NSApplicationDelegate, NSWindowDelegate { // Delegate object attached to NSApp
 
   func applicationDidFinishLaunching(_ notification: Notification) {
@@ -14,7 +16,7 @@ class AppDelegate: NSWindowController, NSApplicationDelegate, NSWindowDelegate {
 class MainWindowController: NSWindowController, NSWindowDelegate {
   convenience init() {
     // Creating Standard window
-    self.init(window: NSWindow(contentRect: NSScreen.main!.visibleFrame, styleMask: [.titled, .fullSizeContentView, .closable, .miniaturizable], backing: .buffered, defer: false))
+    self.init(window: NSWindow(contentRect: mainFrame, styleMask: [.titled, .fullSizeContentView, .closable, .miniaturizable], backing: .buffered, defer: false))
     window!.delegate = self // Manipulating the window
     window!.contentViewController = MainViewController() // Content inside window
     // Styling the window
@@ -39,7 +41,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
 class GraphWindowController: NSWindowController, NSWindowDelegate {
   convenience init() {
     // Creating Standard window
-    self.init(window: NSWindow(contentRect: NSScreen.main!.visibleFrame, styleMask: [.fullSizeContentView, .titled], backing: .buffered, defer: false))
+    self.init(window: NSWindow(contentRect: mainFrame, styleMask: [.fullSizeContentView, .titled], backing: .buffered, defer: false))
     window!.contentViewController = GraphViewController()
     // Styling the window
     window!.titleVisibility = .hidden
