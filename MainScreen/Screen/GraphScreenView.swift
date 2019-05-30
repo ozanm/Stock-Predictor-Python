@@ -440,7 +440,7 @@ class GraphViewController : NSViewController {
 
       let shapeLayer = CAShapeLayer()
       shapeLayer.path = futureDataLine.cgPath
-      shapeLayer.lineWidth = CGFloat(Int.random(in: 100...400))
+      shapeLayer.lineWidth = CGFloat(Int.random(in: 150...400))
       shapeLayer.strokeColor = NSColor.white.cgColor
       shapeLayer.lineCap = .round
       self.graph.layer!.addSublayer(shapeLayer)
@@ -452,6 +452,8 @@ class GraphViewController : NSViewController {
       gradient.mask = shapeLayer
 
       self.graph.layer!.addSublayer(gradient)
+      self.info.removeFromSuperview()
+      self.graph.addSubview(self.info)
 
       let animation = CABasicAnimation(keyPath: "strokeEnd")
       /* set up animation */

@@ -135,7 +135,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
       searchField.drawsBackground = false
       searchField.isBezeled = false
       searchField.focusRingType = .none
-      searchField.placeholderString = "Search Stock Symbols"
+      searchField.placeholderString = "Search For Symbols"
       searchField.font = NSFont.systemFont(ofSize: 75)
       searchField.alphaValue = 0.0
       searchField.becomeFirstResponder()
