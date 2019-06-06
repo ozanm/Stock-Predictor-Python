@@ -10,7 +10,7 @@ class GraphViewController : NSViewController {
   var futureData : [Any]!
 
   var grid : [[Any]] = []
-  var graphData : [NSDictionary]!
+  var graphData : NSArray!
   var info : NSView!
 
   let graph : NSView = NSView()
@@ -41,12 +41,13 @@ class GraphViewController : NSViewController {
     currentStock = StockStructer.mainStock
     StockStructer.mainStock = nil
 
-    Excecute.execCommand(command: "/usr/local/bin/wget", args: ["https://www.dropbox.com/s/67anjgkcbik3hkp/pull_intraday_data.py"])
-    Excecute.execCommand(command: "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3", args: [DIRECTORY + "/pull_intraday_data.py", currentStock.getSymbol()])
-    Excecute.execCommand(command: "/bin/rm", args: [DIRECTORY + "/pull_intraday_data.py"])
-    Excecute.execCommand(command: "/bin/rm", args: [DIRECTORY + "/wget-log"])
+    // Excecute.execCommand(command: "/usr/local/bin/wget", args: ["https://www.dropbox.com/s/67anjgkcbik3hkp/pull_intraday_data.py"])
+    // Excecute.execCommand(command: "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3", args: [DIRECTORY + "/pull_intraday_data.py", currentStock.getSymbol()])
+    // Excecute.execCommand(command: "/bin/rm", args: [DIRECTORY + "/pull_intraday_data.py"])
+    // Excecute.execCommand(command: "/bin/rm", args: [DIRECTORY + "/wget-log"])
 
-    graphData = (JSON.readJSONFromFile(fileName: "../../Data/IntraDay/intraday_data") as? [NSDictionary])!
+    Excecute.execCommand(command: "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3", args: [DIRECTORY + "/../../Data/IntraDay/pull_intraday_data.py", currentStock.getSymbol()])
+    graphData = (JSON.readJSONFromFile(fileName: "intraday_data") as? NSArray)!
   }
 
   func renderCloseBtn() {
@@ -217,18 +218,18 @@ class GraphViewController : NSViewController {
 
     // Then we shift through the values and append the right value for the right index
     for i in 0..<graphData.count {
-      let index = Int(String((graphData[i]["6. time"] as? String)!.characters.suffix(2)))!
-      grid[index - 1].append(graphData[i])
+      let index = Int(String(((graphData[i] as? NSDictionary)!["6. time"] as? String)!.characters.suffix(2)))!
+      grid[index - 1].append((graphData[i] as? NSDictionary)!)
     }
 
     // Setup for the y-coordinates system of the graph.
     // First we get the biggest value in the list and set that as the biggest point
-    var y_pos = ["Min": Double((graphData[0]["4. close"] as? String)!)!, "Max": Double((graphData[0]["4. close"] as? String)!)!]
+    var y_pos = ["Min": Double(((graphData[0] as? NSDictionary)!["4. close"] as? String)!)!, "Max": Double(((graphData[0] as? NSDictionary)!["4. close"] as? String)!)!]
     for i in 1..<graphData.count {
-      if Double((graphData[i]["4. close"] as? String)!)! > y_pos["Max"]! {
-        y_pos["Max"] = Double((graphData[i]["4. close"] as? String)!)!
-      } else if Double((graphData[i]["4. close"] as? String)!)! < y_pos["Min"]! {
-        y_pos["Min"] = Double((graphData[i]["4. close"] as? String)!)!
+      if Double(((graphData[i] as? NSDictionary)!["4. close"] as? String)!)! > y_pos["Max"]! {
+        y_pos["Max"] = Double(((graphData[i] as? NSDictionary)!["4. close"] as? String)!)!
+      } else if Double(((graphData[i] as? NSDictionary)!["4. close"] as? String)!)! < y_pos["Min"]! {
+        y_pos["Min"] = Double(((graphData[i] as? NSDictionary)!["4. close"] as? String)!)!
       }
     }
     // Then we create a good space for every possible value. This is frome ratios
@@ -359,11 +360,7 @@ class GraphViewController : NSViewController {
     var was_last = false
     for i in 1..<grid.count {
       if grid[i].count > 1 {
-        var dist = 1
-        if was_last {
-          dist = 3
-        }
-        figure.move(to: NSPoint(x: (grid[i - dist][0] as? Point)!.x, y: (grid[i - dist][0] as? Point)!.y)) // start point
+        figure.move(to: NSPoint(x: (grid[i - 1][0] as? Point)!.x, y: (grid[i - 1][0] as? Point)!.y)) // start point
         figure.line(to: NSPoint(x: (grid[i][0] as? Point)!.x, y: (grid[i][0] as? Point)!.y)) // destination
         was_last = false
 
@@ -381,8 +378,6 @@ class GraphViewController : NSViewController {
           point.animator().alphaValue = 1.0
           NSAnimationContext.endGrouping()
         }
-      } else {
-        was_last = true
       }
     }
 

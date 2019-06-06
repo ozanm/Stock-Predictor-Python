@@ -47,5 +47,5 @@ for key, value in data.items():
 
 stocks_data = sort(stocks_data) # Sorting the list
 
-with open('../../Data/IntraDay/intraday_data.json', 'w') as outfile:
+with open('intraday_data.json', 'w') as outfile:
     json.dump(stocks_data, outfile, indent=4, sort_keys=True) # Writing it to the JSON file and formatting it

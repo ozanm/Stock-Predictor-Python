@@ -10,18 +10,14 @@ import json
 import sys
 import os
 
-# Used for the Directory
-import pyperclip
-
 DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-
-pyperclip.copy(DIRECTORY)
 
 class Setup: # Uses methods to make sure app won't carsh and updates starting data
     activatedSystems = { "Internet": False, "Indicies": False, "Stocks": False } # the test/check varibales
     def bind(self, process, callback):
         """ Runs the methods for making sure all the requirements are in place before excecuting app's contents. """
         process.run(shell=True)
+        
         self.checkForInternetConnection()
         self.fetchFeaturedIndicies()
         self.fetchFeaturedStocks()
@@ -36,7 +32,7 @@ class Setup: # Uses methods to make sure app won't carsh and updates starting da
             urllib2.urlopen('http://216.58.192.142', timeout=1) # Connecting to Google
             self.activatedSystems["Internet"] = True # It Works!! :)
         except:
-            pass # don't need to do anything here :)
+            exit(0) # No internet connect, can't use app.
 
     def fetchFeaturedIndicies(self):
         """ Runs the Python script for extracting the quote data for the featured indicies. """

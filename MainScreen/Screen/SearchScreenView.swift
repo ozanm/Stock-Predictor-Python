@@ -167,6 +167,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
       self.autocompleteView.borderType = .noBorder
       self.autocompleteView.hasVerticalScroller = true
       self.autocompleteView.drawsBackground = false
+      self.autocompleteView.scrollerKnobStyle = .dark
       self.searchBG.addSubview(self.autocompleteView)
 
       // Initial clip view
