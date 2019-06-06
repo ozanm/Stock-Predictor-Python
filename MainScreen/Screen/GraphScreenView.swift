@@ -359,8 +359,13 @@ class GraphViewController : NSViewController {
     let figure = NSBezierPath() // container for line(s)
     var was_last = false
     for i in 1..<grid.count {
+      var total = 0
       if grid[i].count > 1 {
-        figure.move(to: NSPoint(x: (grid[i - 1][0] as? Point)!.x, y: (grid[i - 1][0] as? Point)!.y)) // start point
+        var dist = 1
+        if was_last {
+          dist = 3
+        }
+        figure.move(to: NSPoint(x: (grid[i - dist][0] as? Point)!.x, y: (grid[i - dist][0] as? Point)!.y)) // start point
         figure.line(to: NSPoint(x: (grid[i][0] as? Point)!.x, y: (grid[i][0] as? Point)!.y)) // destination
         was_last = false
 
@@ -378,6 +383,9 @@ class GraphViewController : NSViewController {
           point.animator().alphaValue = 1.0
           NSAnimationContext.endGrouping()
         }
+        total += 1
+      } else if total > 4 {
+        was_last = true
       }
     }
 
