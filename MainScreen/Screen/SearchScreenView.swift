@@ -339,7 +339,7 @@ class MainViewController : NSViewController, NSWindowDelegate, NSTextFieldDelega
         }
 
         if autoCompleteData!.count == 0 {
-          let lbl = NSTextField(frame: NSRect(x: 20, y: (self.searchBG.subviews.last! as? NSScrollView)!.documentView!.frame.size.height / 2 - 10, width: (self.searchBG.subviews.last! as? NSScrollView)!.documentView!.frame.size.width - 40, height: 50))
+          let lbl = NSTextField(frame: NSRect(x: 20, y: (self.searchBG.subviews.last! as? NSScrollView)!.documentView!.frame.size.height - 200, width: (self.searchBG.subviews.last! as? NSScrollView)!.documentView!.frame.size.width - 40, height: 50))
           lbl.isEditable = false
           lbl.isBezeled = false
           lbl.drawsBackground = false
