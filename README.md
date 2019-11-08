@@ -1,5 +1,5 @@
 # Stock-Predictor-Python
-This is a python program that analyzes current stock market day, and produces a graph of what it will be. It was turned into an executable with Swift as the UI. It was made with a partner for my Intermediate Computer Programming Final.
+This is a python program that analyzes current stock market day, and produces a graph of what it will be. It was turned into an executable with Swift as the UI. It was made with a partner for my Intermediate Computer Programming Final Project.
 
 # Installation
 Please make sure you have Swift 4 installed on your system.
